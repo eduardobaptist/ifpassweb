@@ -49,7 +49,11 @@ export function Login() {
         const tipo = perfil.tipo;
 
         if (tipo === "superuser" || tipo === "admin"){
-            navigate("/Home", {replace:true});
+            navigate("/DashboardAdmin", {replace:true});
+        }
+
+        if (tipo === "aluno"){
+            navigate("/HomeAluno", {replace:true});
         }
 
         console.log("Usuário logado:", user)

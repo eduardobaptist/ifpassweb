@@ -20,7 +20,7 @@ type Stats = {
   eventosAtivos: number
 }
 
-export function Home() {
+export function DashboardAdmin() {
   const [nome, setNome] = useState("")
   const [email, setEmail] = useState("")
   const [senha, setSenha] = useState("")
@@ -289,18 +289,6 @@ export function Home() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium" htmlFor="matricula">
-                    Matrícula (opcional)
-                  </label>
-                  <Input
-                    id="matricula"
-                    value={matricula}
-                    onChange={e => setMatricula(e.target.value)}
-                    placeholder="Ex.: 20231234"
-                  />
-                </div>
-
-                <div className="space-y-1">
                   <label className="text-sm font-medium" htmlFor="cpf">
                     CPF (opcional)
                   </label>
@@ -309,6 +297,18 @@ export function Home() {
                     value={cpf}
                     onChange={e => setCpf(e.target.value)}
                     placeholder="Somente números"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-sm font-medium" htmlFor="matricula">
+                    Senha
+                  </label>
+                  <Input
+                    id="Senha"
+                    value={senha}
+                    onChange={e => setSenha(e.target.value)}
+                    placeholder="*********"
                   />
                 </div>
 
