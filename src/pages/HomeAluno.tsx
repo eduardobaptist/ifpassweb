@@ -1,4 +1,3 @@
-// src/pages/HomeAluno.tsx
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -20,14 +19,7 @@ export function HomeAluno() {
   const [erro, setErro] = useState("")
 
   const navigate = useNavigate()
-  const { user, perfil, loading, signOut } = useAuth()
-
-  // garante rota protegida
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/", { replace: true })
-    }
-  }, [loading, user, navigate])
+  const { user, perfil, signOut } = useAuth()
 
   // carrega estatísticas do aluno
   useEffect(() => {

@@ -1,9 +1,10 @@
-import { useState } from "react"
-import { replace, useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { supabase } from "../config/supabase"
+import { useAuth } from "./AuthContext"
 import logo from "../assets/logo.png"
 
 export function Login() {
@@ -13,53 +14,40 @@ export function Login() {
     const [erro, setErro] = useState("")
 
     const navigate = useNavigate()
+    const { user, perfil } = useAuth()
+
+    // Redireciona automaticamente se o usuário já estiver logado
+    useEffect(() => {
+        if (user && perfil) {
+            const tipo = perfil.tipo
+
+            if (tipo === "superuser" || tipo === "admin") {
+                navigate("/DashboardAdmin", { replace: true })
+            } else if (tipo === "aluno") {
+                navigate("/HomeAluno", { replace: true })
+            }
+        }
+    }, [user, perfil, navigate])
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         setErro("")
         setCarregando(true)
 
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
             email,
             password: senha,
         })
 
-        if (error || !data?.user) {
+        if (error) {
             console.error(error)
             setErro("E-mail ou senha inválidos.")
             setCarregando(false)
             return
         }
 
-        const user = data.user
-
-        const { data: perfil, error: perfilError } = await supabase
-            .from("usuarios")
-            .select("*")
-            .eq("id", user.id)
-            .single()
-
-        if (perfilError) {
-            console.error("Erro ao buscar perfil:", perfilError)
-            setErro("Erro ao carregar dados do usuário.")
-            setCarregando(false)
-            return
-        }
-
-        const tipo = perfil.tipo;
-
-        if (tipo === "superuser" || tipo === "admin"){
-            navigate("/DashboardAdmin", {replace:true});
-        }
-
-        if (tipo === "aluno"){
-            navigate("/HomeAluno", {replace:true});
-        }
-
-        console.log("Usuário logado:", user)
-        console.log("Perfil:", perfil)
-
-        setCarregando(false)
+        // O AuthContext vai detectar a mudança e carregar o perfil automaticamente
+        // A navegação será feita pelo useEffect acima quando o perfil estiver carregado
     }
 
     return (
