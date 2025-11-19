@@ -18,12 +18,16 @@ export function Login() {
 
     // Redireciona automaticamente se o usuário já estiver logado
     useEffect(() => {
+        console.log("🔍 useEffect - user:", user, "perfil:", perfil)
         if (user && perfil) {
             const tipo = perfil.tipo
+            console.log("✅ Usuário já logado, tipo:", tipo)
 
             if (tipo === "superuser" || tipo === "admin") {
+                console.log("➡️ Navegando para DashboardAdmin")
                 navigate("/DashboardAdmin", { replace: true })
             } else if (tipo === "aluno") {
+                console.log("➡️ Navegando para HomeAluno")
                 navigate("/HomeAluno", { replace: true })
             }
         }
@@ -33,21 +37,57 @@ export function Login() {
         e.preventDefault()
         setErro("")
         setCarregando(true)
+        console.log("🚀 Iniciando login...")
 
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password: senha,
         })
 
-        if (error) {
-            console.error(error)
+        console.log("📡 Resposta do login:", { data, error })
+
+        if (error || !data?.user) {
+            console.error("❌ Erro no login:", error)
             setErro("E-mail ou senha inválidos.")
             setCarregando(false)
             return
         }
 
-        // O AuthContext vai detectar a mudança e carregar o perfil automaticamente
-        // A navegação será feita pelo useEffect acima quando o perfil estiver carregado
+        const user = data.user
+        console.log("✅ Login bem-sucedido! User ID:", user.id)
+
+        // Busca o perfil do usuário para determinar o redirecionamento
+        console.log("🔍 Buscando perfil do usuário...")
+        const { data: perfil, error: perfilError } = await supabase
+            .from("usuarios")
+            .select("*")
+            .eq("id", user.id)
+            .single()
+
+        console.log("📡 Resposta da busca do perfil:", { perfil, perfilError })
+
+        if (perfilError || !perfil) {
+            console.error("❌ Erro ao buscar perfil:", perfilError)
+            setErro("Erro ao carregar dados do usuário.")
+            setCarregando(false)
+            return
+        }
+
+        const tipo = perfil.tipo
+        console.log("✅ Perfil carregado! Tipo:", tipo)
+
+        // Navega para a página apropriada baseado no tipo de usuário
+        if (tipo === "superuser" || tipo === "admin") {
+            console.log("➡️ Navegando para DashboardAdmin")
+            navigate("/DashboardAdmin", { replace: true })
+        } else if (tipo === "aluno") {
+            console.log("➡️ Navegando para HomeAluno")
+            navigate("/HomeAluno", { replace: true })
+        } else {
+            console.error("❌ Tipo de usuário não reconhecido:", tipo)
+            setErro("Tipo de usuário não reconhecido.")
+            setCarregando(false)
+        }
     }
 
     return (
