@@ -162,6 +162,11 @@ export function DashboardAdmin() {
     setCarregando(false)
   }
 
+  async function sair() {
+    await supabase.auth.signOut()
+    navigate("/", { replace: true })
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <aside className="w-64 bg-emerald-700 text-emerald-50 flex flex-col">
@@ -175,7 +180,7 @@ export function DashboardAdmin() {
           </button>
           <button
             className="w-full text-left px-3 py-2 rounded-md hover:bg-emerald-800/70"
-            onClick={() => navigate("/Usuarios")}
+            onClick={() => navigate("/Users")}
           >
             Usuários
           </button>
@@ -205,7 +210,9 @@ export function DashboardAdmin() {
             </h2>
           </div>
 
-          <Button variant="outline">Sair</Button>
+          <Button variant="outline" onClick={sair}>
+            Sair
+          </Button>
         </div>
 
         <section className="grid gap-4 md:grid-cols-3">

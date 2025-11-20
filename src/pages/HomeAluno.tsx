@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { supabase } from "../config/supabase"
 import logo from "../assets/logo.png"
-import { useAuth } from "./AuthContext"
 
 type StatsAluno = {
   eventosAtivos: number
@@ -13,26 +12,33 @@ type StatsAluno = {
 }
 
 export function HomeAluno() {
+  const [userName, setUserName] = useState("")
+  const [userEmail, setUserEmail] = useState("")
   const [stats, setStats] = useState<StatsAluno>({
     eventosAtivos: 0,
     meusEventos: 0,
   })
   const [erro, setErro] = useState("")
-
   const navigate = useNavigate()
-  const { user, perfil, signOut } = useAuth()
 
-  // carrega estatísticas do aluno
   useEffect(() => {
-    async function carregarDadosAluno() {
-      if (!user) return
-
+    async function carregarDados() {
       setErro("")
 
-      const userId = user.id
+      const { data, error } = await supabase.auth.getUser()
 
-      const [{ data: eventos, error: eventosError }, { data: inscricoes, error: inscError }] =
+      if (error || !data?.user) {
+        navigate("/login", { replace: true })
+        return
+      }
+
+      const user = data.user
+      const userId = user.id
+      setUserEmail(user.email ?? "")
+
+      const [{ data: perfil }, { data: eventos, error: eventosError }, { data: inscricoes, error: inscError }] =
         await Promise.all([
+          supabase.from("usuarios").select("nome").eq("id", userId).single(),
           supabase.from("eventos").select("id, ativo, inscricao"),
           supabase.from("inscricao").select("id").eq("usuario_id", userId),
         ])
@@ -41,6 +47,8 @@ export function HomeAluno() {
         console.error(eventosError || inscError)
         setErro("Erro ao carregar dados.")
       }
+
+      if (perfil?.nome) setUserName(perfil.nome)
 
       const eventosAtivos =
         eventos?.filter(e => e.ativo === true && e.inscricao === true).length ?? 0
@@ -53,20 +61,20 @@ export function HomeAluno() {
       })
     }
 
-    carregarDadosAluno()
-  }, [user])
+    carregarDados()
+  }, [navigate])
 
   async function sair() {
-    await signOut()
+    await supabase.auth.signOut()
     navigate("/", { replace: true })
   }
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      {/* Lateral */}
+      {/* Lateral igual ao dashboard, mas versão aluno */}
       <aside className="w-64 bg-emerald-700 text-emerald-50 flex flex-col">
-        <div className="px-6 h-30 bg-white py-5 border-b border-white-600 flex items-center justify-center">
-          <img src={logo} className="size-50" />
+        <div className="px-6 bg-white py-5 border-b border-white-600">
+          <img src={logo} className="size-50 px-4 w-full flex-1 h-full" />
         </div>
 
         <nav className="flex-1 px-3 py-4 text-sm space-y-1">
@@ -85,7 +93,7 @@ export function HomeAluno() {
             className="w-full text-left px-3 py-2 rounded-md hover:bg-emerald-800/70"
             onClick={() => navigate("/Eventos")}
           >
-            Eventos
+            Todos os eventos
           </button>
 
           <button
@@ -105,9 +113,9 @@ export function HomeAluno() {
 
         <div className="px-6 py-4 border-t border-emerald-600 text-xs">
           <p className="font-medium">Logado como:</p>
-          <p>{user?.email}</p>
+          <p>{userEmail}</p>
           <p className="font-medium mt-2">Perfil:</p>
-          <p>{perfil?.tipo ?? "Aluno"}</p>
+          <p>Aluno</p>
         </div>
       </aside>
 
@@ -116,7 +124,7 @@ export function HomeAluno() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold text-slate-900">
-              Olá, {perfil?.nome || "Aluno"}
+              Olá, {userName || "Aluno"}
             </h2>
             <p className="text-sm text-slate-600">
               Bem-vindo ao Ifpass – Sistema de Eventos do IFFar.

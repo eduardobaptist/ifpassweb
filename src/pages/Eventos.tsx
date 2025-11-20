@@ -1,4 +1,3 @@
-// src/pages/Eventos.tsx
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -84,8 +83,8 @@ export function Eventos() {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <aside className="w-64 bg-emerald-700 text-emerald-50 flex flex-col">
-         <div className="px-6 h-30 bg-white py-5 border-b border-white-600 flex items-center justify-center">
-          <img src={logo} className="size-50" />
+        <div className="px-6 bg-white py-5 border-b border-white-600">
+          <img src={logo} className="size-50 px-4 w-full flex-1 h-full" />
         </div>
 
         <nav className="flex-1 px-3 py-4 text-sm space-y-1">
@@ -129,8 +128,7 @@ export function Eventos() {
           <p>Aluno</p>
         </div>
       </aside>
-
-      {/* Conteúdo principal */}
+      
       <main className="flex-1 px-8 py-6 space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div>
